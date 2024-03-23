@@ -3,8 +3,10 @@
 #include <chrono>
 #include <iostream>
 
+
+//Set initial values
 #define TIME_MS 60'000
-#define SIZE 100000
+#define SIZE 10'000
 
 void timeAdd1() {
     auto duration = std::chrono::milliseconds::zero(); //initialize for later

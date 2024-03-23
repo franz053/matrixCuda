@@ -6,7 +6,7 @@
 
 //Constructor
 Matrix::Matrix(long rows, long columns) : rows_(rows), columns_(columns) {
-    //Allocate storage for the values
+    //Allocate storage for the values in "shared" memory
     cudaMallocManaged(&values, (rows*columns)*sizeof(long));
 }
 
@@ -74,16 +74,20 @@ Matrix Matrix::add(const Matrix &M) {
 }
 */
 
+//Adds to matrices if they are compatible
 Matrix Matrix::add(const Matrix &M) {
+    //Error handling
     if (this->rows_ != M.rows_ || this->columns_ != M.columns_)
         throw std::invalid_argument("The matrices aren't the same size");
 
     Matrix C(rows_, columns_); //Stores the result
+    //Size per CUDA Block (Not 100% sure howe to set this properly, but should be a power of 2)
     int blockSize = 1024;
     int numBlocks = (rows_*columns_ + blockSize - 1) / blockSize;
+    //Call the cuda function
     addMatrices<<<numBlocks,blockSize>>>(this->values, M.values, C.values, rows_*columns_);
+    //Wait for the GPU to finish
     cudaDeviceSynchronize();
-
     return C;
 }
 
@@ -112,15 +116,21 @@ Matrix Matrix::mult(const Matrix &M) {
 }
 */
 
+//Multiplies two matrices if they are compatible
+// The matrix of which the function is called is on the LHS
 Matrix Matrix::mult(const Matrix &M) {
     //Error handling
     if (this->columns_ != M.rows_)
         throw std::invalid_argument("The matrices can't be multiplied");
 
     Matrix C(this->rows_, M.columns_); //Stores the result
+
+    //Size per CUDA Block (Not 100% sure howe to set this properly, but should be a power of 2)
     int blockSize = 1024;
     int numBlocks = (rows_*columns_ + blockSize - 1) / blockSize;
+    //Call the cuda function
     mulMat<<<numBlocks,blockSize>>>(this->values, this->columns_, M.values, M.rows_, M.columns_, C.values, C.columns_*C.rows_, C.columns_);
+    //Wait for the GPU to finish
     cudaDeviceSynchronize();
     return C;
 }

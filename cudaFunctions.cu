@@ -3,22 +3,28 @@
 //Adds to matrices if they are compatible
 //Source: https://developer.nvidia.com/blog/even-easier-introduction-cuda/
 
+
+//Adds two matrices
 __global__
 void addMatrices(long *a, long *b, long *c, long n) {
 
+    //Determine index and stride for the current thread
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int stride = blockDim.x * gridDim.x;
+    //Add the values and store them to the matrix
     for (unsigned int i = index; i < n; i += stride) {
         c[i] = a[i] + b[i];
     }
 }
 
-
+//Multiplies two matrices
 __global__
 void mulMat(long *a, long aColumns, long *b, long bRows, long bColumns, long *c, long cTotal, long cColumns) {
 
+    //Determine index and stride for the current thread
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int stride = blockDim.x * gridDim.x;
+
     for (unsigned int i = index; i < cTotal; i += stride) {
         long sum = 0;//sum of the products
         //multiply the corresponding row & column
